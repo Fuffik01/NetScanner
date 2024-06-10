@@ -28,6 +28,7 @@ bot = telebot.TeleBot(token)
 
 set_deauth = False
 stop = True
+set_interval = False
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -46,8 +47,7 @@ def start(message):
 
 @bot.message_handler(content_types=['text'])
 def next(message):
-    global set_deauth
-    global stop
+    global set_deauth, stop, set_interval
     if(message.text == "❌ Управление режимом деаунтификации" or message.text == "✅ Управление режимом деаунтификации"):
         markup = telebot.types.ReplyKeyboardMarkup()
         btn1 = telebot.types.KeyboardButton("Включить")
@@ -70,27 +70,45 @@ def next(message):
         else:
             btn3 = telebot.types.KeyboardButton("✅ Управление режимом деаунтификации")
         markup.add(btn1, btn2, btn3)
-        bot.send_message(message.chat.id, f'Привет, {message.from_user.first_name}! Укажи вариант защиты', reply_markup=markup)
+        bot.send_message(message.chat.id, "Укажи вариант защиты", reply_markup=markup)
     elif(message.text == "Одно сканирование"):
         if(set_deauth == False):
             scan("192.168.0.0/28", 0)
         else:
             scan("192.168.0.0/28", 2)
     elif(message.text == "Сканирование с интервалом"):
-        bot.send_message(message.chat.id, text="Задай интервал")
+        markup_back = telebot.types.ReplyKeyboardMarkup()
+        btn_back = telebot.types.KeyboardButton("Назад")
+        markup_back.add(btn_back)
+        bot.send_message(message.chat.id, text="Задай интервал", reply_markup=markup_back)
+        set_interval = True
     elif(message.text == "Стоп"):
         bot.send_message(message.chat.id, text="Все процессы приостановлены")
         stop = False
-    else:
-        settings = int(message.text)
-        if(set_deauth == False):
-            while(stop):
-                scan("192.168.0.0/28", 1)
-                sleep(settings)
+    elif(set_interval == True):
+        if(message.text == "Назад"):
+            markup = telebot.types.ReplyKeyboardMarkup()
+            btn1 = telebot.types.KeyboardButton("Одно сканирование")
+            btn2 = telebot.types.KeyboardButton("Сканирование с интервалом")
+            if(set_deauth == False):
+                btn3 = telebot.types.KeyboardButton("❌ Управление режимом деаунтификации")
+            else:
+                btn3 = telebot.types.KeyboardButton("✅ Управление режимом деаунтификации")
+            markup.add(btn1, btn2, btn3)
+            bot.send_message(message.chat.id, "Укажи вариант защиты", reply_markup=markup)
         else:
-            while(stop):
-                scan("192.168.0.0/28", 3)
-                sleep(settings)
+            try:
+                settings = int(message.text)
+                if(set_deauth == False):
+                    while(stop):
+                        scan("192.168.0.0/28", 1)
+                        sleep(settings)
+                else:
+                    while(stop):
+                        scan("192.168.0.0/28", 3)
+                        sleep(settings)
+            except:
+                bot.send_message(message.chat.id, text="Неверное значение")
     
          
 def send(mac):
