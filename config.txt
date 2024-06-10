@@ -1,0 +1,8 @@
+{
+    'known_mac_addresses': [
+        "",
+    ],
+    'ap_mac': "",
+    'token': "",
+    'id': ""
+}
