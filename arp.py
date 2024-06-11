@@ -205,6 +205,3 @@ def scan(ip, a):
         bot.send_message(
             my_id, f"Сканирование завершено\nКоличество устройств:{len(answer_list)}"
         )
-
-
-bot.polling(non_stop=True)
