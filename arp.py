@@ -1,9 +1,8 @@
-import ast
+from ast import literal_eval
 import datetime as time
 from time import sleep
 import scapy.all as scapy
 from scapy.layers.dot11 import Dot11, Dot11Deauth, RadioTap
-from tkinter import *
 
 import telebot
 
@@ -11,10 +10,10 @@ config_file = "config.txt"
 
 
 def read_config(file_path):
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="UTF-8") as file:
         content = file.read()
 
-    config_dict = ast.literal_eval(content)
+    config_dict = literal_eval(content)
     token = config_dict.get("token", "")
     id = config_dict.get("id", "")
     known_mac_addresses = config_dict.get("known_mac_addresses", [])
@@ -24,7 +23,7 @@ def read_config(file_path):
 
 
 # Чтение конфигурации
-token, id, known_mac_addresses, ap_mac = read_config(config_file)
+token, my_id, known_mac_addresses, ap_mac = read_config(config_file)
 
 bot = telebot.TeleBot(token)
 
@@ -37,12 +36,12 @@ main_menu = True
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    global stop, send_deauth, main_menu
+    global stop, main_menu
     stop = True
     markup = telebot.types.ReplyKeyboardMarkup()
     btn1 = telebot.types.KeyboardButton("Одно сканирование")
     btn2 = telebot.types.KeyboardButton("Сканирование с интервалом")
-    if set_deauth == False:
+    if set_deauth is False:
         btn3 = telebot.types.KeyboardButton("❌ Управление режимом деаунтификации")
     else:
         btn3 = telebot.types.KeyboardButton("✅ Управление режимом деаунтификации")
@@ -105,7 +104,7 @@ def handle_message(message):
             markup = telebot.types.ReplyKeyboardMarkup()
             btn1 = telebot.types.KeyboardButton("Одно сканирование")
             btn2 = telebot.types.KeyboardButton("Сканирование с интервалом")
-            if set_deauth == False:
+            if set_deauth is False:
                 btn3 = telebot.types.KeyboardButton(
                     "❌ Управление режимом деаунтификации"
                 )
@@ -121,12 +120,12 @@ def handle_message(message):
             deauth_menu = False
         else:
             bot.send_message(message.chat.id, text="Непонятная команда!")
-    elif set_interval == True:
+    elif set_interval is True:
         if message.text == "Назад":
             markup = telebot.types.ReplyKeyboardMarkup()
             btn1 = telebot.types.KeyboardButton("Одно сканирование")
             btn2 = telebot.types.KeyboardButton("Сканирование с интервалом")
-            if set_deauth == False:
+            if set_deauth is False:
                 btn3 = telebot.types.KeyboardButton(
                     "❌ Управление режимом деаунтификации"
                 )
@@ -153,7 +152,7 @@ def handle_message(message):
                         sleep(settings)
             except ValueError:
                 bot.send_message(message.chat.id, text="Неверное значение!")
-    elif stop == False:
+    elif stop is False:
         bot.send_message(
             message.chat.id, text="Все процессы приостановлены, перезапустите /start"
         )
@@ -166,7 +165,7 @@ def handle_message(message):
 
 def send(mac):
     bot.send_message(
-        id,
+        my_id,
         f"{time.datetime.now()}\nВНИМАНИЕ! \nОбнаружено неизвестное устройство\n{mac}",
     )
 
@@ -178,9 +177,6 @@ def send_deauth(ap, client, interval, count, iface="wlan0"):
 
 
 def scan(ip, a):
-    global set_deauth
-    global stop
-    print(set_deauth)
     print(time.datetime.now())
     arp_request = scapy.ARP(pdst=ip)
     arp_br = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
@@ -193,23 +189,21 @@ def scan(ip, a):
         if mac not in known_mac_addresses:
             if a == 0:
                 send(mac)
-                break
             elif a == 1:
                 send(mac)
             elif a == 2:
                 send(mac)
-                bot.send_message(id, "Переход в режим экстренной деаутентификации")
+                bot.send_message(my_id, "Переход в режим экстренной деаутентификации")
                 while stop:
                     send_deauth(ap_mac, mac, interval=1, count=5, iface="wlan0")
-                break
             elif a == 3:
                 send(mac)
-                bot.send_message(id, "Переход в режим экстренной деаутентификации")
+                bot.send_message(my_id, "Переход в режим экстренной деаутентификации")
                 while stop:
                     send_deauth(ap_mac, mac, interval=1, count=5, iface="wlan0")
     if a == 0:
         bot.send_message(
-            id, f"Сканирование завершено\nКоличество устройств:{len(answer_list)}"
+            my_id, f"Сканирование завершено\nКоличество устройств:{len(answer_list)}"
         )
 
 
