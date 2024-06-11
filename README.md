@@ -23,9 +23,16 @@ sudo iwconfig wlan0 channel 1
 sudo ifconfig wlan0 up
 ```
 
-Может потребоваться устранить процессы, которые мешают работе режима монитора
+Может потребоваться устранить процессы, которые мешают работе режима монитора.
 Для их устранения используется Airmon-ng
 
 ```sh
-airmon-ng check kill
+sudo airmon-ng check kill
+```
+
+Запуск лучше производить в режиме суперпользователя:
+
+```sh
+sudo su
+python NetScanner.py
 ```
