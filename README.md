@@ -19,7 +19,7 @@ ip                  | IP адрес сети с маской (пример: 192.
 ```sh
 sudo ifconfig wlan0 down
 sudo iwconfig wlan0 mode Monitore
-sudo iwconfig wlan0 channel 1
+sudo iwconfig wlan0 channel <номер каналa>
 sudo ifconfig wlan0 up
 ```
 
