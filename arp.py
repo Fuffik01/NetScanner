@@ -9,6 +9,7 @@ import telebot
 config_file = "config.txt"
 
 
+# Чтение конфигурации
 def read_config(file_path):
     with open(file_path, "r", encoding="UTF-8") as file:
         content = file.read()
@@ -18,12 +19,13 @@ def read_config(file_path):
     id = config_dict.get("id", "")
     known_mac_addresses = config_dict.get("known_mac_addresses", [])
     ap_mac = config_dict.get("ap_mac", "")
+    ip = config_dict.get("ip", "")
 
-    return token, id, known_mac_addresses, ap_mac
+    return token, id, known_mac_addresses, ap_mac, ip
 
 
 # Чтение конфигурации
-token, my_id, known_mac_addresses, ap_mac = read_config(config_file)
+token, my_id, known_mac_addresses, ap_mac, ip = read_config(config_file)
 
 bot = telebot.TeleBot(token)
 
@@ -34,6 +36,7 @@ deauth_menu = False
 main_menu = True
 
 
+# Обработка команды /start
 @bot.message_handler(commands=["start"])
 def start(message):
     global stop, main_menu
@@ -54,6 +57,7 @@ def start(message):
     main_menu = True
 
 
+# Обработка сообщений
 @bot.message_handler(content_types=["text"])
 def handle_message(message):
     global main_menu, deauth_menu, set_deauth, set_interval, stop
@@ -79,9 +83,9 @@ def handle_message(message):
             main_menu = False
         elif message.text == "Одно сканирование":
             if not set_deauth:
-                scan("192.168.0.0/28", 0)
+                scan(ip, 0)
             else:
-                scan("192.168.0.0/28", 2)
+                scan(ip, 2)
         elif message.text == "Сканирование с интервалом":
             markup_back = telebot.types.ReplyKeyboardMarkup()
             btn_back = telebot.types.KeyboardButton("Назад")
@@ -144,11 +148,11 @@ def handle_message(message):
                 settings = int(message.text)
                 if not set_deauth:
                     while stop:
-                        scan("192.168.0.0/28", 1)
+                        scan(ip, 1)
                         sleep(settings)
                 else:
                     while stop:
-                        scan("192.168.0.0/28", 3)
+                        scan(ip, 3)
                         sleep(settings)
             except ValueError:
                 bot.send_message(message.chat.id, text="Неверное значение!")
@@ -163,6 +167,7 @@ def handle_message(message):
         stop = False
 
 
+# Сообщение о неизвестном устройстве
 def send(mac):
     bot.send_message(
         my_id,
@@ -170,12 +175,14 @@ def send(mac):
     )
 
 
+# Функция формирования и отправки деаутентификации
 def send_deauth(ap, client, interval, count, iface="wlan0"):
     dot11 = Dot11(addr1=client, addr2=ap, addr3=ap)
     packet = RadioTap() / dot11 / Dot11Deauth(reason=7)
     scapy.sendp(packet, iface=iface, count=count, inter=interval)
 
 
+# Функция сканирования
 def scan(ip, a):
     print(time.datetime.now())
     arp_request = scapy.ARP(pdst=ip)
