@@ -5,6 +5,7 @@ import scapy.all as scapy
 from scapy.layers.dot11 import Dot11, Dot11Deauth, RadioTap
 
 import telebot
+import os
 
 config_file = "config.txt"
 
@@ -18,14 +19,35 @@ def read_config(file_path):
     token = config_dict.get("token", "")
     id = config_dict.get("id", "")
     known_mac_addresses = config_dict.get("known_mac_addresses", [])
-    ap_mac = config_dict.get("ap_mac", "")
+    ap_mac_2G = config_dict.get("ap_mac_2.4G", "")
+    ap_mac_5G = config_dict.get("ap_mac_5G", "")
+    ap_channel_2G = config_dict.get("ap_channel_2G", "")
+    ap_channel_5G = config_dict.get("ap_channel_5G", "")
     ip = config_dict.get("ip", "")
 
-    return token, id, known_mac_addresses, ap_mac, ip
+    return (
+        token,
+        id,
+        known_mac_addresses,
+        ap_mac_2G,
+        ap_mac_5G,
+        ip,
+        ap_channel_2G,
+        ap_channel_5G,
+    )
 
 
 # Чтение конфигурации
-token, my_id, known_mac_addresses, ap_mac, ip = read_config(config_file)
+(
+    token,
+    my_id,
+    known_mac_addresses,
+    ap_mac_2G,
+    ap_mac_5G,
+    ip,
+    ap_channel_2G,
+    ap_channel_5G,
+) = read_config(config_file)
 
 bot = telebot.TeleBot(token)
 
@@ -202,12 +224,18 @@ def scan(ip, a):
                 send(mac)
                 bot.send_message(my_id, "Переход в режим экстренной деаутентификации")
                 while stop:
-                    send_deauth(ap_mac, mac, interval=1, count=5, iface="wlan0")
+                    os.system(f"iwconfig wlan0 channel {ap_channel_2G}")
+                    send_deauth(ap_mac_2G, mac, interval=1, count=5, iface="wlan0")
+                    os.system(f"iwconfig wlan0 channel {ap_channel_5G}")
+                    send_deauth(ap_mac_5G, mac, interval=1, count=5, iface="wlan0")
             elif a == 3:
                 send(mac)
                 bot.send_message(my_id, "Переход в режим экстренной деаутентификации")
                 while stop:
-                    send_deauth(ap_mac, mac, interval=1, count=5, iface="wlan0")
+                    os.system("iwconfig wlan0 channel 1")
+                    send_deauth(ap_mac_2G, mac, interval=1, count=5, iface="wlan0")
+                    os.system("iwconfig wlan0 channel 52")
+                    send_deauth(ap_mac_5G, mac, interval=1, count=5, iface="wlan0")
     if a == 0:
         bot.send_message(
             my_id, f"Сканирование завершено\nКоличество устройств:{len(answer_list)}"

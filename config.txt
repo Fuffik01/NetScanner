@@ -2,7 +2,10 @@
     'known_mac_addresses': [
         "",
     ],
-    'ap_mac': "",
+    'ap_mac_2.4G': "",
+    'ap_mac_5G': "",
+    'ap_channel_2.4G': "",
+    'ap_channel_5G' : "",
     'token': "",
     'id': "",
     'ip': ""
