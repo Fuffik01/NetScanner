@@ -21,7 +21,7 @@ def read_config(file_path):
     known_mac_addresses = config_dict.get("known_mac_addresses", [])
     ap_mac_2G = config_dict.get("ap_mac_2.4G", "")
     ap_mac_5G = config_dict.get("ap_mac_5G", "")
-    ap_channel_2G = config_dict.get("ap_channel_2G", "")
+    ap_channel_2G = config_dict.get("ap_channel_2.4G", "")
     ap_channel_5G = config_dict.get("ap_channel_5G", "")
     ip = config_dict.get("ip", "")
 
