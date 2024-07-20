@@ -62,6 +62,7 @@ main_menu = True
 @bot.message_handler(commands=["start"])
 def start(message):
     global stop, main_menu
+    print(ip)
     stop = True
     markup = telebot.types.ReplyKeyboardMarkup()
     btn1 = telebot.types.KeyboardButton("Одно сканирование")
@@ -224,18 +225,22 @@ def scan(ip, a):
                 send(mac)
                 bot.send_message(my_id, "Переход в режим экстренной деаутентификации")
                 while stop:
-                    os.system(f"iwconfig wlan0 channel {ap_channel_2G}")
-                    send_deauth(ap_mac_2G, mac, interval=1, count=5, iface="wlan0")
-                    os.system(f"iwconfig wlan0 channel {ap_channel_5G}")
-                    send_deauth(ap_mac_5G, mac, interval=1, count=5, iface="wlan0")
+                    if(ap_mac_2G != ""):
+                        os.system(f"iwconfig wlan0 channel {ap_channel_2G}")
+                        send_deauth(ap_mac_2G, mac, interval=1, count=5, iface="wlan0")
+                    if(ap_mac_5G != ""):
+                        os.system(f"iwconfig wlan0 channel {ap_channel_5G}")
+                        send_deauth(ap_mac_5G, mac, interval=1, count=5, iface="wlan0")
             elif a == 3:
                 send(mac)
                 bot.send_message(my_id, "Переход в режим экстренной деаутентификации")
                 while stop:
-                    os.system("iwconfig wlan0 channel 1")
-                    send_deauth(ap_mac_2G, mac, interval=1, count=5, iface="wlan0")
-                    os.system("iwconfig wlan0 channel 52")
-                    send_deauth(ap_mac_5G, mac, interval=1, count=5, iface="wlan0")
+                    if(ap_mac_2G != ""):
+                        os.system(f"iwconfig wlan0 channel {ap_channel_2G}")
+                        send_deauth(ap_mac_2G, mac, interval=1, count=5, iface="wlan0")
+                    if(ap_mac_5G != ""):
+                        os.system(f"iwconfig wlan0 channel {ap_channel_5G}")
+                        send_deauth(ap_mac_5G, mac, interval=1, count=5, iface="wlan0")
     if a == 0:
         bot.send_message(
             my_id, f"Сканирование завершено\nКоличество устройств:{len(answer_list)}"
